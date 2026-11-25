@@ -44,6 +44,9 @@
       case "say":
         runtime.emit("SAY", sprite, "say", String(command.text || "").slice(0, 300));
         break;
+      case "stopSpeaking":
+        runtime.emit("SAY", sprite, "say", "");
+        break;
       case "move":
         sprite.setXY(sprite.x, sprite.y + Number(command.value || 0));
         break;
