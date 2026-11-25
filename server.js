@@ -17,6 +17,16 @@ const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("he
 const sessions = new Map();
 const sockets = new Map();
 app.use(express.json({ limit: "64kb" }));
+// CORS support for browser clients (website and PenguinMod extension).
+// Token authentication uses request headers, not cookies.
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-session-id, x-username, x-session-token");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 function safeEqual(a, b) {
