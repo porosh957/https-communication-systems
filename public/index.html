@@ -5,10 +5,11 @@
 <div id="sessionCard" class="session hidden"><div class="sessiontop"><strong>Session created</strong><span class="badge">SERVER VERIFIED</span></div><label>Session ID</label><code id="sid"></code><label>Username</label><code id="suser"></code><label>Private token <span class="warning">Keep secret</span></label><code id="token"></code><p class="hint">Use these values in the PenguinMod extension connect block. Never publish the token.</p></div></section>
 <section class="panel"><h2>Command editor</h2><p>Type commands directly. One command per line; indent nested commands by four spaces.</p>
 <div class="syntax"><span><code>(value)</code> number/input</span><span><code>[text]</code> text</span><span><code>{true}</code> boolean</span></div>
-<label for="program">Program</label><textarea id="program" spellcheck="false" autocapitalize="off">when green flag clicked
-repeat (3)
+<label for="program">Program</label><textarea id="program" spellcheck="false" autocapitalize="off">repeat (3)
     move steps (10)
     turn degrees (360)
-say [Hello from the website!]</textarea>
-<div class="examples"><strong>Supported commands</strong><code>move steps (10)</code><code>turn degrees (360)</code><code>say [Hello!]</code><code>go to x (100) y (-50)</code><code>set x to (20)</code><code>set y to (-20)</code><code>wait milliseconds (500)</code><code>set visible {true}</code><code>repeat (3)</code><code>forever</code><span>Use <code>#</code> for comments. Loop bodies must be indented by four spaces. forever runs until you disconnect.</span></div>
+say [Hello from the website!]
+wait milliseconds (1000)
+stop speaking</textarea>
+<div class="examples"><strong>Supported commands</strong><code>move steps (10)</code><code>turn degrees (360)</code><code>say [Hello!]</code><code>stop speaking</code><code>go to x (100) y (-50)</code><code>set x to (20)</code><code>set y to (-20)</code><code>wait milliseconds (500)</code><code>set visible {true}</code><code>repeat (3)</code><code>forever</code><span>Use <code>#</code> for comments. Loop bodies must be indented by four spaces. forever runs until you disconnect.</span></div>
 <button id="send" disabled>Queue program</button><p id="result" class="hint">Create a session first.</p></section><footer>Prototype · command names are parsed into a structured program · session memory clears when server restarts</footer></main><script src="app.js"></script></body></html>
