@@ -1,6 +1,5 @@
-/* PenguinMod Website Bridge — HTTP polling starter.
-   Uses HTTPS when SERVER_URL is set to your Render service.
-   Structured allowlisted commands only; never eval remote JavaScript. */
+/* PenguinMod Website Bridge — typed command program receiver.
+   Remote input is parsed into a small allowlisted command set; never eval remote code. */
 (function (Scratch) {
   "use strict";
   if (!Scratch || !Scratch.extensions) throw new Error("PenguinMod extension API unavailable");
@@ -11,15 +10,9 @@
   let polling = false;
 
   function apiHeaders() {
-    return {
-      "x-session-id": sessionId,
-      "x-username": username,
-      "x-session-token": token
-    };
+    return { "x-session-id": sessionId, "x-username": username, "x-session-token": token };
   }
-  function normalizeURL(value) {
-    return String(value || "").trim().replace(/\/+$/, "");
-  }
+  function normalizeURL(value) { return String(value || "").trim().replace(/\/+$/, ""); }
   async function verifySession() {
     const response = await fetch(serverURL + "/api/session", { headers: apiHeaders() });
     if (!response.ok) throw new Error("Session verification rejected (" + response.status + ")");
@@ -27,12 +20,17 @@
     if (data.sessionId !== sessionId || data.username !== username) throw new Error("Session identity mismatch");
     return data;
   }
-  async function execute(command) {
-    const runtime = Scratch.vm && Scratch.vm.runtime;
-    const sprite = runtime && runtime.targets && runtime.targets.find(target => !target.isStage);
-    if (!sprite) throw new Error("No sprite target found");
-
+  async function execute(command, runtime, sprite, depth = 0) {
+    if (depth > 8) throw new Error("Program nesting limit exceeded");
     switch (command.type) {
+      case "repeat":
+        for (let i = 0; i < command.times && connected; i++) {
+          for (const nested of command.program || []) {
+            if (!connected) break;
+            await execute(nested, runtime, sprite, depth + 1);
+          }
+        }
+        break;
       case "say":
         runtime.emit("SAY", sprite, "say", String(command.text || "").slice(0, 300));
         break;
@@ -51,6 +49,10 @@
       case "setY":
         sprite.setXY(sprite.x, Number(command.value) || 0);
         break;
+      case "visible":
+        if (typeof sprite.setVisible === "function") sprite.setVisible(Boolean(command.value));
+        else throw new Error("Visibility control is unavailable in this PenguinMod runtime");
+        break;
       case "wait":
         await new Promise(resolve => setTimeout(resolve, Math.max(0, Math.min(5000, Number(command.ms) || 0))));
         break;
@@ -67,9 +69,15 @@
       if (!response.ok) throw new Error("Command queue request failed (" + response.status + ")");
       const data = await response.json();
       for (const item of (data.commands || [])) {
-        for (const command of (item.program || [])) await execute(command);
+        const runtime = Scratch.vm && Scratch.vm.runtime;
+        const sprite = runtime && runtime.targets && runtime.targets.find(target => !target.isStage);
+        if (!runtime || !sprite) throw new Error("No sprite target found");
+        for (const command of (item.program || [])) {
+          if (!connected) break;
+          await execute(command, runtime, sprite);
+        }
       }
-      statusText = "Connected · session verified";
+      if (connected) statusText = "Connected · session verified";
     } catch (error) {
       statusText = "Connection error: " + error.message;
       connected = false;
@@ -100,10 +108,7 @@
     }
     setServer(args) {
       const candidate = normalizeURL(args.URL);
-      if (!/^https?:\/\//i.test(candidate)) {
-        statusText = "Server URL must start with http:// or https://";
-        return;
-      }
+      if (!/^https?:\/\//i.test(candidate)) { statusText = "Server URL must start with http:// or https://"; return; }
       serverURL = candidate;
       statusText = "Server set to " + serverURL;
     }
