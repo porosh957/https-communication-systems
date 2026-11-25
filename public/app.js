@@ -49,7 +49,13 @@ function parseProgram(source) {
       }
 
       if (/^forever\s*$/i.test(line)) {
-        throw new Error("forever blocks are not enabled yet; use repeat (number) for a bounded loop.");
+        const childIndent = findNextIndent(lines, index);
+        if (childIndent === null || childIndent <= indent) throw new Error("forever needs an indented body (line " + index + ").");
+        if (childIndent !== indent + 4) throw new Error("Indent nested commands by exactly four spaces (line " + (index + 1) + ").");
+        const body = parseBlock(childIndent, depth + 1);
+        if (!body.length) throw new Error("forever body cannot be empty (line " + index + ").");
+        commands.push({ type: "forever", program: body });
+        continue;
       }
 
       if ((match = line.match(/^say\s+\[([\s\S]*)\]$/i))) {
