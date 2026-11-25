@@ -60,7 +60,7 @@ function parseProgram(source) {
 
       if (/^stop speaking$/i.test(line)) {
         commands.push({ type: "stopSpeaking" });
-      } else ((match = line.match(/^say\s+\[([\s\S]*)\]$/i))) {
+      } else if ((match = line.match(/^say\s+\[([\s\S]*)\]$/i))) {
         commands.push({ type: "say", text: match[1] });
       } else if ((match = line.match(/^move\s+steps\s+\((-?(?:\d+\.?\d*|\.\d+))\)$/i))) {
         commands.push({ type: "move", value: Number(match[1]) });
