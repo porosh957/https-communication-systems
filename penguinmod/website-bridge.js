@@ -31,6 +31,16 @@
           }
         }
         break;
+      case "forever":
+        while (connected) {
+          for (const nested of command.program || []) {
+            if (!connected) break;
+            await execute(nested, runtime, sprite, depth + 1);
+          }
+          // Yield so the browser remains responsive and the disconnect block can run.
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        break;
       case "say":
         runtime.emit("SAY", sprite, "say", String(command.text || "").slice(0, 300));
         break;
