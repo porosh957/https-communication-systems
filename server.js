@@ -48,7 +48,7 @@ function cleanUsername(value) {
 
 function validateProgram(program, depth = 0) {
   if (!Array.isArray(program) || program.length > 100 || depth > 8) return false;
-  const allowed = new Set(["say", "move", "turn", "goto", "setX", "setY", "wait", "visible", "repeat", "forever"]);
+  const allowed = new Set(["say", "stopSpeaking", "move", "turn", "goto", "setX", "setY", "wait", "visible", "repeat", "forever"]);
   return program.every(cmd => {
     if (!cmd || typeof cmd !== "object" || !allowed.has(cmd.type)) return false;
     if (cmd.type === "repeat") {
@@ -57,6 +57,7 @@ function validateProgram(program, depth = 0) {
     }
     if (cmd.type === "forever") return validateProgram(cmd.program, depth + 1) && cmd.program.length > 0;
     if (cmd.type === "say") return typeof cmd.text === "string" && cmd.text.length <= 300;
+    if (cmd.type === "stopSpeaking") return true;
     if (cmd.type === "visible") return typeof cmd.value === "boolean";
     if (cmd.type === "goto") return Number.isFinite(cmd.x) && Number.isFinite(cmd.y);
     if (cmd.type === "wait") return Number.isFinite(cmd.ms) && cmd.ms >= 0 && cmd.ms <= 5000;
